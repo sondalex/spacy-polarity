@@ -6,13 +6,19 @@ build-backend = "setuptools.build_meta"
 name = "spacy-polarity"
 version = "0.1.0"
 description = "Spacy extension for sentiment polarity"
+readme = "README.md"
 authors = [{ name = "sondalex"}]
-license = { text = "MIT" }
+license = { file = "LICENSE" }
 dependencies = [
     "spacy>=3.1.0",
     "textblob>=0.19.0",
     "numpy<2.0.0"
 ]
+requires-python = '>=3.10'
+
+[project.urls]
+homepage = "https://github.com/sondalex/spacy-polarity"
+documentation = "https://github.com/sondalex/spacy-polarity"
 
 [project.optional-dependencies]
 test = ["pytest"]
