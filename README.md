@@ -24,7 +24,6 @@ doc = nlp("The financial markets are performing well, bringing good returns to i
 # Sentence level polarity  
 for sent in doc.sents:
     print(sent._.polarity)
-    print(type(sent._.polarity))
 
 # Document level polarity
 print(doc._.polarity)
