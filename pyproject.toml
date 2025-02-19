@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spacy-polarity"
-version = "0.1.0"
 description = "Spacy extension for sentiment polarity"
 readme = "README.md"
 authors = [{ name = "sondalex"}]
@@ -15,6 +14,10 @@ dependencies = [
     "numpy<2.0.0"
 ]
 requires-python = '>=3.10'
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "spacy_polarity._version.__version__"}
 
 [project.urls]
 homepage = "https://github.com/sondalex/spacy-polarity"
@@ -26,4 +29,6 @@ docs = ["sphinx"]
 
 [tool.setuptools]
 packages = ["spacy_polarity"]
+
+
 

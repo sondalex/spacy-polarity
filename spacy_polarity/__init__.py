@@ -7,6 +7,8 @@ from textblob import TextBlob
 from spacy_polarity.types import TextBlobConfig, SpacyPolarityConfig
 from typing import Iterable
 
+from spacy_polarity._version import __version__
+
 
 class PolarityABC(metaclass=ABCMeta):
     def __init__(
@@ -94,3 +96,6 @@ Language.factory(
     default_config=DEFAULT_CONFIG,
     func=hierarchical_polarity,
 )
+
+
+__all__ = ["__version__", "DEFAULT_CONFIG", "HierarchicalPolarity"]
