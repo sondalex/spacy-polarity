@@ -32,6 +32,16 @@ print(doc._.polarity)
 
 ## Development
 
+### Style and linting
+
+```bash
+ruff check
+```
+
+```bash
+ruff format
+```
+
 ### Testing
 
 ```bash

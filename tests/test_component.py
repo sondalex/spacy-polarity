@@ -1,7 +1,7 @@
 import pytest
 import spacy
 
-import spacy_polarity # noqa: F401
+import spacy_polarity  # noqa: F401
 from textblob import TextBlob
 
 

@@ -38,6 +38,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .
+          python -m spacy download en_core_web_sm
           pip install .[test]
       - name: Run pytest
         run: |
