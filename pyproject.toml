@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spacy-polarity"
+version = "0.1.0"
+description = "Spacy extension for sentiment polarity"
+authors = [{ name = "sondalex"}]
+license = { text = "MIT" }
+dependencies = [
+    "spacy>=3.1.0",
+    "textblob>=0.19.0",
+    "numpy<2.0.0"
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+docs = ["sphinx"]
+
+[tool.setuptools]
+packages = ["spacy_polarity"]
+
