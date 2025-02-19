@@ -1,5 +1,7 @@
 # spacy-polarity
 
+![pyversion](https://img.shields.io/badge/python-3.10+-blue.svg)
+
 **Measure sentiment polarity of sentences and documents**
 
 ## Installation
