@@ -1,32 +1,28 @@
 from abc import ABCMeta, abstractmethod
-from typing import Optional
+from functools import cached_property
+from typing import Iterable
+
 from spacy.language import Language
 from spacy.tokens.doc import Doc
 from spacy.tokens.span import Span
 from textblob import TextBlob
-from spacy_polarity.types import TextBlobConfig, SpacyPolarityConfig
-from typing import Iterable
 
 from spacy_polarity._version import __version__
+from spacy_polarity.types import SpacyPolarityConfig, TextBlobConfig, TransformerConfig
 
 
 class PolarityABC(metaclass=ABCMeta):
     def __init__(
         self,
         has_sentencizer: bool,
-        tokenizer: Optional[object] = None,
-        np_extractor: Optional[object] = None,
-        pos_tagger: Optional[object] = None,
-        analyzer: Optional[object] = None,
-        parser: Optional[object] = None,
-        classifier: Optional[object] = None,
+        use_transformer: bool,
+        textblob_config: TextBlobConfig,
+        transformer_config: TransformerConfig,
     ):
-        self.tokenizer = tokenizer
-        self.np_extractor = np_extractor
-        self.pos_tagger = pos_tagger
-        self.analyzer = analyzer
-        self.parser = parser
-        self.classifier = classifier
+        self.textblob_config = textblob_config
+        self.transformer_config = transformer_config
+        self.use_transformer = use_transformer
+        self.has_sentencizer = has_sentencizer
         self.__post__init__()
 
     @abstractmethod
@@ -37,21 +33,40 @@ class PolarityABC(metaclass=ABCMeta):
 
 
 class HierarchicalPolarity(PolarityABC):
-    def __call__(self, doc: Doc) -> Doc:
+    @staticmethod
+    def _textblob_infer(doc: Doc, has_sentencizer: bool, config: TextBlobConfig):
         sentences: Iterable[Span] = doc.sents
-        for sentence in sentences:
-            textblob = TextBlob(
-                sentence.text,
-                tokenizer=self.tokenizer,
-                np_extractor=self.np_extractor,
-                pos_tagger=self.pos_tagger,
-                analyzer=self.analyzer,
-                parser=self.parser,
-                classifier=self.classifier,
-            )
-
-            sentence._.polarity = textblob.polarity
+        if has_sentencizer:
+            for sentence in sentences:
+                textblob = TextBlob(sentence.text, **config)
+                sentence._.polarity = textblob.polarity
         doc._.polarity = TextBlob(doc.text).polarity
+
+    def _transformer_infer(
+        self, doc: Doc, has_sentencizer: bool, config: TransformerConfig
+    ):
+        from spacy_polarity._transformers import polarity
+
+        sentences: Iterable[Span] = doc.sents
+        sentences = list(sentences)
+        if has_sentencizer:
+            output = self.model([sentence.text for sentence in sentences])
+            for i, sentence in enumerate(sentences):
+                sentence._.polarity = polarity(output[i])
+        output = self.model([doc.text])
+        doc._.polarity = polarity(output[0])
+
+    @cached_property
+    def model(self) -> "spacy_polarity._transformers.Model":  # noqa: F821
+        from spacy_polarity._transformers import Model
+
+        return Model(**self.transformer_config)
+
+    def __call__(self, doc: Doc) -> Doc:
+        if not self.use_transformer:
+            self._textblob_infer(doc, self.has_sentencizer, self.textblob_config)
+        else:
+            self._transformer_infer(doc, self.has_sentencizer, self.transformer_config)
         return doc
 
     def __post__init__(self):
@@ -65,21 +80,23 @@ def hierarchical_polarity(
     nlp: Language,
     name: str,
     sentence_polarity: bool,
+    use_transformer: bool,
     textblob_config: TextBlobConfig,
-    tokenizer=None,
-    np_extractor=None,
-    pos_tagger=None,
-    analyzer=None,
-    parser=None,
-    classifier=None,
+    transformer_config: TransformerConfig,
 ):
     has_sentencizer = "senter" in nlp.component_names and sentence_polarity
-    return HierarchicalPolarity(has_sentencizer, **textblob_config)
+    return HierarchicalPolarity(
+        has_sentencizer,
+        use_transformer,
+        textblob_config=textblob_config,
+        transformer_config=transformer_config,
+    )
 
 
 DEFAULT_CONFIG: SpacyPolarityConfig = {
     # Whether to apply sentence polarity
     "sentence_polarity": True,
+    "use_transformer": False,
     "textblob_config": {
         "tokenizer": None,
         "np_extractor": None,
@@ -87,6 +104,12 @@ DEFAULT_CONFIG: SpacyPolarityConfig = {
         "analyzer": None,
         "parser": None,
         "classifier": None,
+    },
+    "transformer_config": {
+        "name": "ProsusAI/finbert",
+        "padding": True,
+        "truncation": True,
+        "use_gpu": False,
     },
 }
 

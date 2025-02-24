@@ -26,6 +26,7 @@ documentation = "https://github.com/sondalex/spacy-polarity"
 [project.optional-dependencies]
 test = ["pytest"]
 docs = ["sphinx"]
+transformers = ["transformers", "torch"]
 
 [tool.setuptools]
 packages = ["spacy_polarity"]
